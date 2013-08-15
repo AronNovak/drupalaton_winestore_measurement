@@ -1,7 +1,8 @@
 #!/bin/bash
-# Measures the performance of the site with ApacheBench
+# Measures the performance of the site with ApacheBench.
 
 no_of_requests=5
+concurrency=1
 
 uid=0
 url=""
@@ -24,7 +25,7 @@ fi
 if [ $uid -eq 0 ]
 then
   # Benchmark it as anonymous
-  ab -n $no_of_requests -g perf`date +%s`.dat $url
+  ab -c $concurrency -n $no_of_requests -g perf`date +%s`.dat $url
 else
   # Benchmark it as logged in user
   cookie_file=`mktemp`
@@ -32,7 +33,7 @@ else
   wget --quiet --output-document=/dev/null --save-cookies=$cookie_file `drush uli $uid --browser=0 -l $url`
   cookie=`fgrep SESS $cookie_file | awk '{print $6"="$7}'`
   # Pass this cookie to AB
-  ab -C "$cookie" -n $no_of_requests -g perf-`date +%s`.dat $url
+  ab -C "$cookie" -c $concurrency -n $no_of_requests -g perf-`date +%s`.dat $url
   rm $cookie_file
 fi
 
